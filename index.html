@@ -28,13 +28,17 @@
         <!-- Home Page Finish -->
     </div>
 
-    <!-- Catalogue Page Start -->
-    <main v-if="currentPage === 'catalogue'" class="catalog-page">
-        <h2>Catalogue</h2>
-        <div class="catalog-grid">
-            <!-- Placeholder for catalogue items -->
-        </div>
-    </main>
+        <!-- Catalogue Page Start -->
+        <script src="../CST3145-Coursework-Frontend/js/Classes.js"></script>
+        <main v-if="currentPage === 'catalogue'" class="catalog-page">
+            <h2>Class Catalogue</h2>
+            <div v-for="product in products" :key="product.id" class="product-card">
+                <img :src="product.image" :alt="product.title">
+                <h3>{{ product.title }}</h3>
+                <p>{{ product.description }}</p>
+                <p><strong>Price:</strong> ${{ product.price }}</p>
+            </div>
+        </main>
     <!-- Catalogue Page Finish -->
 
 
