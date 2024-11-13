@@ -37,6 +37,24 @@
 			<!-- Catalogue Page Start -->
 			<main v-if="currentPage === 'catalogue'" class="catalog-page">
                 <h2>Class Catalogue</h2>
+                
+                <!-- Sorting Controls -->
+                <div class="sorting-controls">
+                    <label for="sortCriteria">Sort by:</label>
+                    <select v-model="sortCriteria" id="sortCriteria">
+                        <option value="price">Price</option>
+                        <option value="Subject">Subject</option>
+                        <option value="Location">Location</option>
+                        <option value="availableInventory">Available Inventory</option>
+                    </select>
+            
+                    <label for="sortOrder">Order:</label>
+                    <select v-model="sortOrder" id="sortOrder">
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
+                    </select>
+                </div>
+            
                 <div class="catalog-grid">
                     <div v-for="product in sortedProducts" :key="product.id" class="product-card">
                         <figure>
@@ -52,7 +70,8 @@
                         <button v-else disabled="disabled">Out of Stock</button>
                     </div>
                 </div>
-            </main>            
+            </main>
+                        
 			<!-- Catalogue Page Finish -->
 
 			<!-- Cart Page Start -->
@@ -183,13 +202,28 @@
             cvv: '',
             sameAddress: true,
         },
+        sortCriteria: 'price', 
+        sortOrder: 'asc',     
     },
     computed: {
         cartTotal() {
             return this.cart.reduce((total, item) => total + (item.price * item.quantity), 0);
         },
+        
         sortedProducts() {
-            return this.products.sort((a, b) => a.price - b.price);
+            return [...this.products].sort((a, b) => {
+                let result = 0;
+
+                // Compare based on the selected criteria
+                if (this.sortCriteria === 'price' || this.sortCriteria === 'availableInventory') {
+                    result = a[this.sortCriteria] - b[this.sortCriteria];
+                } else {
+                    result = a[this.sortCriteria].localeCompare(b[this.sortCriteria]);
+                }
+
+                // Adjust for descending order if necessary
+                return this.sortOrder === 'asc' ? result : -result;
+            });
         },
     },
     methods: {
@@ -211,14 +245,12 @@
         },
 
         canAddToCart(product) {
-            // Calculate remaining stock by subtracting quantity in cart from available inventory
             const cartItem = this.cart.find(item => item.id === product.id);
             const currentCartQuantity = cartItem ? cartItem.quantity : 0;
             return currentCartQuantity < product.availableInventory;
         },
 
         cartCount(productId) {
-            // Returns the current quantity of a product in the cart
             const cartItem = this.cart.find(item => item.id === productId);
             return cartItem ? cartItem.quantity : 0;
         },
@@ -245,6 +277,7 @@
         },
     },
 });
+
 
 		</script>
 	</body>
