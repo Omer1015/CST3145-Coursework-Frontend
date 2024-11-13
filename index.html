@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Class Booking Site</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+    <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <nav>
+            <h1>BookSmart</h1>
+            <ul>
+                <li><a href="#" v-on:click.prevent="showPage('home')">Home</a></li>
+                <li><a href="#" v-on:click.prevent="showPage('catalogue')">Catalogue</a></li>
+                <li><a href="#" v-on:click.prevent="showPage('cart')">Cart</a></li>
+            </ul>
+        </nav>
+
+        <!-- Home Page Start -->
+        <header v-if="currentPage === 'home'">
+            <h1>Welcome to BookSmart</h1>
+            <p>Your go-to platform for finding classes and courses</p>
+            <button v-on:click.prevent="showPage('catalogue')">Browse Classes</button>
+        </header>
+        <!-- Home Page Finish -->
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                currentPage: 'home',
+            },
+            methods: {
+                showPage(page) {
+                    this.currentPage = page;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
