@@ -43,3 +43,19 @@ button {
 button:hover {
     background-color: #00cc66;
 }
+
+header {
+    text-align: center;
+    padding: 50px;
+    background-image: url("../img/background.jpg");
+    background-size: cover;
+    color: white;
+}
+
+header h1 {
+    font-size: 48px;
+}
+
+header p {
+    font-size: 20px;
+}

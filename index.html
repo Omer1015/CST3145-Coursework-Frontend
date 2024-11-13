@@ -20,10 +20,10 @@
         </nav>
 
         <!-- Home Page Start -->
-        <header v-if="currentPage === 'home'">
-            <h1>Welcome to BookSmart</h1>
-            <p>Your go-to platform for finding classes and courses</p>
-            <button v-on:click.prevent="showPage('catalogue')">Browse Classes</button>
+        <header v-if="currentPage === 'home'" style="text-align: center; padding: 50px;">
+            <h1>Discover a range of classes!</h1>
+            <p>Find the best class to improve your skills!</p>
+            <button v-on:click.prevent="showPage('catalogue')">Get Started</button>
         </header>
         <!-- Home Page Finish -->
     </div>
