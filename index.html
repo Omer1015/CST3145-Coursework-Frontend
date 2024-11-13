@@ -5,7 +5,9 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Class Booking Site</title>
 		<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
-		<link rel="stylesheet" href="./css/style.css" />
+		<link rel="stylesheet" href="./css/style.css"/>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=shopping_cart" />
+        
 	</head>
 
 	<body>
@@ -18,7 +20,10 @@
 				<ul>
 					<li><a href="#" v-on:click.prevent="showPage('home')">Home</a></li>
 					<li><a href="#" v-on:click.prevent="showPage('catalogue')">Catalogue</a></li>
-					<li><a href="#" v-on:click.prevent="showPage('cart')">Cart</a></li>
+					<li> <a href="#" v-on:click.prevent="showPage('cart')"> Cart
+                    <span class="material-symbols-outlined"> shopping_cart</span>
+                    <span v-if="uniqueCartItemCount > 0" class="cart-count">({{ uniqueCartItemCount }})
+                    </span></a></li>
 				</ul>
 			</nav>
 			<!-- Header End -->
@@ -214,17 +219,19 @@
             return [...this.products].sort((a, b) => {
                 let result = 0;
 
-                // Compare based on the selected criteria
                 if (this.sortCriteria === 'price' || this.sortCriteria === 'availableInventory') {
                     result = a[this.sortCriteria] - b[this.sortCriteria];
                 } else {
                     result = a[this.sortCriteria].localeCompare(b[this.sortCriteria]);
                 }
-
-                // Adjust for descending order if necessary
                 return this.sortOrder === 'asc' ? result : -result;
             });
         },
+
+        // New computed property for counting unique items in the cart
+        uniqueCartItemCount() {
+            return this.cart.length;
+        }
     },
     methods: {
         showPage(page) {
@@ -277,6 +284,7 @@
         },
     },
 });
+
 
 
 		</script>
