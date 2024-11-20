@@ -1,292 +1,257 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Class Booking Site</title>
-		<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
-		<link rel="stylesheet" href="./css/style.css"/>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=shopping_cart" />
-        
-	</head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Class Booking Site</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+  <link rel="stylesheet" href="./css/style.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=shopping_cart" />
+</head>
+<body>
+  <div id="app">
+    <nav>
+      <div class="logo">
+        <img src="img/BOOKSMART.png" style="height: 100px;">
+      </div>
+      <ul>
+        <li><a href="#" v-on:click.prevent="showPage('home')">Home</a></li>
+        <li><a href="#" v-on:click.prevent="showPage('catalogue')">Catalogue</a></li>
+        <li>
+          <a href="#" v-on:click.prevent="showPage('cart')"> Cart
+            <span class="material-symbols-outlined"> shopping_cart</span>
+            <span v-if="uniqueCartItemCount > 0" class="cart-count">({{ uniqueCartItemCount }})</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
 
-	<body>
-		<div id="app">
-			<!-- Header -->
-			<nav>
-				<div class="logo">
-					<img src ="img/BOOKSMART.png" style="height: 100px;">
-				</div>
-				<ul>
-					<li><a href="#" v-on:click.prevent="showPage('home')">Home</a></li>
-					<li><a href="#" v-on:click.prevent="showPage('catalogue')">Catalogue</a></li>
-					<li> <a href="#" v-on:click.prevent="showPage('cart')"> Cart
-                    <span class="material-symbols-outlined"> shopping_cart</span>
-                    <span v-if="uniqueCartItemCount > 0" class="cart-count">({{ uniqueCartItemCount }})
-                    </span></a></li>
-				</ul>
-			</nav>
-			<!-- Header End -->
+    <header v-if="currentPage === 'home'">
+      <div class="hero-text">
+        <h1>Discover a range of classes!</h1>
+        <p>Find the best class to improve your skills!</p>
+        <a href="#" v-on:click.prevent="showPage('catalogue')" class="button">Get Started</a>
+      </div>
+    </header>
 
-			<!-- Home Page Start -->
-			<header v-if="currentPage === 'home'">
-                
-				<div class="hero-text">
-					<h1>Discover a range of classes!</h1>
-					<p>Find the best class to improve your skills!</p>
-					<a href="#" v-on:click.prevent="showPage('catalogue')" class="button">Get Started</a>
-				</div>
-            </header>
-			<!-- Home Page Finish -->
-
-			<!-- Catalogue Page Start -->
-			<main v-if="currentPage === 'catalogue'" class="catalog-page">
-                <h2>Class Catalogue</h2>
-                
-                <!-- Sorting Controls -->
-                <div class="sorting-controls">
-                    <label for="sortCriteria">Sort by:</label>
-                    <select v-model="sortCriteria" id="sortCriteria">
-                        <option value="price">Price</option>
-                        <option value="Subject">Subject</option>
-                        <option value="Location">Location</option>
-                        <option value="availableInventory">Available Inventory</option>
-                    </select>
-            
-                    <label for="sortOrder">Order:</label>
-                    <select v-model="sortOrder" id="sortOrder">
-                        <option value="asc">Ascending</option>
-                        <option value="desc">Descending</option>
-                    </select>
+    <main v-if="currentPage === 'catalogue'" class="catalog-page">
+      <h2>Class Catalogue</h2>
+      <div class="sorting-controls">
+        <label for="sortCriteria">Sort by:</label>
+        <select v-model="sortCriteria" id="sortCriteria">
+          <option value="price">Price</option>
+          <option value="Subject">Subject</option>
+          <option value="Location">Location</option>
+          <option value="availableInventory">Available Inventory</option>
+        </select>
+        <label for="sortOrder">Order:</label>
+        <select v-model="sortOrder" id="sortOrder">
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+      </div>
+      <div class="catalog-grid">
+        <div v-for="product in sortedProducts" :key="product.id" class="product-card">
+          <figure>
+            <img :src="product.image" :alt="product.title" />
+          </figure>
+          <h3>{{ product.title }}</h3>
+          <p>{{ product.description }}</p>
+          <p><strong>Subject:</strong> {{ product.Subject }}</p>
+          <p><strong>Location:</strong> {{ product.Location }}</p>
+          <p><strong>Price:</strong> ${{ product.price }}</p>
+          <p><strong>Available:</strong> {{ product.availableInventory - cartCount(product.id) }} in stock</p>
+          <button v-if="canAddToCart(product)" @click="addToCart(product)">Add to Cart</button>
+          <button v-else disabled="disabled">Out of Stock</button>
+        </div>
+      </div>
+    </main>
+    
+    <main v-if="currentPage === 'cart'" class="checkout-page">
+      <div class="row">
+        <div class="col-75">
+          <div class="container">
+            <form @submit.prevent="submitOrder">
+              <div class="row">
+                <div class="col-50">
+                  <h3>Billing Address</h3>
+                  <label for="fname"><i class="fa fa-user"></i> Full Name</label>
+                  <input type="text" id="fname" v-model="order.firstName" placeholder="John M. Doe">
+                  <label for="email"><i class="fa fa-envelope"></i> Email</label>
+                  <input type="text" id="email" v-model="order.email" placeholder="john@example.com">
+                  <label for="adr"><i class="fa fa-address-card-o"></i> Address</label>
+                  <input type="text" id="adr" v-model="order.address" placeholder="542 W. 15th Street">
+                  <label for="city"><i class="fa fa-institution"></i> City</label>
+                  <input type="text" id="city" v-model="order.city" placeholder="New York">
+                  <div class="row">
+                    <div class="col-50">
+                      <label for="state">State</label>
+                      <input type="text" id="state" v-model="order.state" placeholder="NY">
+                    </div>
+                    <div class="col-50">
+                      <label for="zip">Zip</label>
+                      <input type="text" id="zip" v-model="order.zip" placeholder="10001">
+                    </div>
+                  </div>
                 </div>
-            
-                <div class="catalog-grid">
-                    <div v-for="product in sortedProducts" :key="product.id" class="product-card">
-                        <figure>
-                            <img :src="product.image" :alt="product.title" />
-                        </figure>
-                        <h3>{{ product.title }}</h3>
-                        <p>{{ product.description }}</p>
-                        <p><strong>Subject:</strong> {{ product.Subject }}</p>
-                        <p><strong>Location:</strong> {{ product.Location }}</p>
-                        <p><strong>Price:</strong> ${{ product.price }}</p>
-                        <p><strong>Available:</strong> {{ product.availableInventory - cartCount(product.id) }} in stock</p>
-                        <button v-if="canAddToCart(product)" @click="addToCart(product)">Add to Cart</button>
-                        <button v-else disabled="disabled">Out of Stock</button>
+                <div class="col-50">
+                  <h3>Payment</h3>
+                  <label for="cname">Name on Card</label>
+                  <input type="text" id="cname" v-model="order.cardName" placeholder="John More Doe">
+                  <label for="ccnum">Credit card number</label>
+                  <input type="text" id="ccnum" v-model="order.cardNumber" placeholder="1111-2222-3333-4444">
+                  <label for="expmonth">Exp Month</label>
+                  <input type="text" id="expmonth" v-model="order.expMonth" placeholder="September">
+                  <div class="row">
+                    <div class="col-50">
+                      <label for="expyear">Exp Year</label>
+                      <input type="text" id="expyear" v-model="order.expYear" placeholder="2024">
                     </div>
+                    <div class="col-50">
+                      <label for="cvv">CVV</label>
+                      <input type="text" id="cvv" v-model="order.cvv" placeholder="352">
+                    </div>
+                  </div>
                 </div>
-            </main>
-                        
-			<!-- Catalogue Page Finish -->
+              </div>
+              <div class="order-summary">
+                <h4>Order Summary</h4>
+                <p><strong>Full Name:</strong> {{ order.firstName }}</p>
+                <p><strong>Email:</strong> {{ order.email }}</p>
+                <p><strong>Address:</strong> {{ order.address }}</p>
+                <p><strong>City:</strong> {{ order.city }}</p>
+                <p><strong>State:</strong> {{ order.state }}</p>
+                <p><strong>Zip Code:</strong> {{ order.zip }}</p>
+                <p><strong>Shipping Address Same as Billing:</strong> {{ order.sameAddress ? 'Yes' : 'No' }}</p>
+              </div>
+              <label>
+                <input type="checkbox" v-model="order.sameAddress"> Shipping address same as billing
+              </label>
+              <button type="submit" class="btn">Continue to checkout</button>
+            </form>
+          </div>
+          <div class="container cart-items">
+            <h3>Shopping Cart</h3>
+            <div v-for="cartItem in cart" :key="cartItem.id" class="cart-item">
+              <figure>
+                <img :src="cartItem.image" :alt="cartItem.title" />
+              </figure>
+              <h4>{{ cartItem.title }}</h4>
+              <p>Price: ${{ cartItem.price }}</p>
+              <div class="quantity-controls">
+                <button @click="updateQuantity(cartItem, -1)">-</button>
+                <span>{{ cartItem.quantity }}</span>
+                <button @click="updateQuantity(cartItem, 1)">+</button>
+              </div>
+              <p>Total: ${{ (cartItem.price * cartItem.quantity).toFixed(2) }}</p>
+              <button @click="removeFromCart(cartItem)">Remove</button>
+            </div>
+            <hr>
+            <h4>Grand Total: ${{ cartTotal.toFixed(2) }}</h4>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
 
-			<!-- Cart Page Start -->
-			<main v-if="currentPage === 'cart'" class="checkout-page">
-    			<div class="row">
-        			<div class="col-75">
-            			<div class="container">
-                		<!-- Checkout Form Start -->
-                		<form @submit.prevent="submitOrder">
-                    	<!-- Billing Address Section -->
-                    	<div class="row">
-                        <div class="col-50">
-                            <h3>Billing Address</h3>
-                            <label for="fname"><i class="fa fa-user"></i> Full Name</label>
-                            <input type="text" id="fname" v-model="order.firstName" placeholder="John M. Doe">
-                            
-                            <label for="email"><i class="fa fa-envelope"></i> Email</label>
-                            <input type="text" id="email" v-model="order.email" placeholder="john@example.com">
-                            
-                            <label for="adr"><i class="fa fa-address-card-o"></i> Address</label>
-                            <input type="text" id="adr" v-model="order.address" placeholder="542 W. 15th Street">
-                            
-                            <label for="city"><i class="fa fa-institution"></i> City</label>
-                            <input type="text" id="city" v-model="order.city" placeholder="New York">
-
-                            <div class="row">
-                                <div class="col-50">
-                                    <label for="state">State</label>
-                                    <input type="text" id="state" v-model="order.state" placeholder="NY">
-                                </div>
-                                <div class="col-50">
-                                    <label for="zip">Zip</label>
-                                    <input type="text" id="zip" v-model="order.zip" placeholder="10001">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Payment Section -->
-                        <div class="col-50">
-                            <h3>Payment</h3>
-                            
-                            <label for="cname">Name on Card</label>
-                            <input type="text" id="cname" v-model="order.cardName" placeholder="John More Doe">
-                            
-                            <label for="ccnum">Credit card number</label>
-                            <input type="text" id="ccnum" v-model="order.cardNumber" placeholder="1111-2222-3333-4444">
-                            
-                            <label for="expmonth">Exp Month</label>
-                            <input type="text" id="expmonth" v-model="order.expMonth" placeholder="September">
-
-                            <div class="row">
-                                <div class="col-50">
-                                    <label for="expyear">Exp Year</label>
-                                    <input type="text" id="expyear" v-model="order.expYear" placeholder="2024">
-                                </div>
-                                <div class="col-50">
-                                    <label for="cvv">CVV</label>
-                                    <input type="text" id="cvv" v-model="order.cvv" placeholder="352">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Order Summary Above the Checkout Button -->
-                    <div class="order-summary">
-                        <h4>Order Summary</h4>
-                        <p><strong>Full Name:</strong> {{ order.firstName }}</p>
-                        <p><strong>Email:</strong> {{ order.email }}</p>
-                        <p><strong>Address:</strong> {{ order.address }}</p>
-                        <p><strong>City:</strong> {{ order.city }}</p>
-                        <p><strong>State:</strong> {{ order.state }}</p>
-                        <p><strong>Zip Code:</strong> {{ order.zip }}</p>
-                        <p><strong>Shipping Address Same as Billing:</strong> {{ order.sameAddress ? 'Yes' : 'No' }}</p>
-                    </div>
-
-                    <!-- Checkbox for Shipping Address -->
-                    <label>
-                        <input type="checkbox" v-model="order.sameAddress"> Shipping address same as billing
-                    </label>
-                    <button type="submit" class="btn">Continue to checkout</button>
-                </form>
-                <!-- Checkout Form End -->
-
-                <!-- Cart Items Section in Checkout -->
-				<div class="container cart-items">
-    				<h3>Shopping Cart</h3>
-    				<div v-for="cartItem in cart" :key="cartItem.id" class="cart-item">
-        				<figure>
-            				<img :src="cartItem.image" :alt="cartItem.title" />
-        				</figure>
-        				<h4>{{ cartItem.title }}</h4>
-        				<p>Price: ${{ cartItem.price }}</p>
-        				<div class="quantity-controls">
-            				<button @click="updateQuantity(cartItem, -1)">-</button>
-            				<span>{{ cartItem.quantity }}</span>
-            				<button @click="updateQuantity(cartItem, 1)">+</button>
-        				</div>
-        				<p>Total: ${{ (cartItem.price * cartItem.quantity).toFixed(2) }}</p>
-        				<button @click="removeFromCart(cartItem)">Remove</button>
-    				</div>
-    				<hr>
-    				<h4>Grand Total: ${{ cartTotal.toFixed(2) }}</h4>
-				</div>
-
-        
-<!-- Cart Page Finish -->
-
-</div>
-	<script src="js/Classes.js"></script>
-	<script>
-	new Vue({
-    el: '#app',
-    data: {
-        currentPage: 'home',
+  <script src="frontend.js"></script>
+  <script>
+    new Vue({
+      el: "#app",
+      data: {
+        currentPage: "home",
         cart: [],
-        products: products,
+        products: [],
         order: {
-            firstName: '',
-            email: '',
-            address: '',
-            city: '',
-            state: '',
-            zip: '',
-            cardName: '',
-            cardNumber: '',
-            expMonth: '',
-            expYear: '',
-            cvv: '',
-            sameAddress: true,
+          firstName: '',
+          email: '',
+          address: '',
+          city: '',
+          state: '',
+          zip: '',
+          cardName: '',
+          cardNumber: '',
+          expMonth: '',
+          expYear: '',
+          cvv: '',
+          sameAddress: true,
         },
-        sortCriteria: 'price', 
-        sortOrder: 'asc',     
-    },
-    computed: {
+        sortCriteria: "price",
+        sortOrder: "asc",
+      },
+      computed: {
         cartTotal() {
-            return this.cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+          return this.cart.reduce((total, item) => total + (item.price * item.quantity), 0);
         },
-        
         sortedProducts() {
-            return [...this.products].sort((a, b) => {
-                let result = 0;
-
-                if (this.sortCriteria === 'price' || this.sortCriteria === 'availableInventory') {
-                    result = a[this.sortCriteria] - b[this.sortCriteria];
-                } else {
-                    result = a[this.sortCriteria].localeCompare(b[this.sortCriteria]);
-                }
-                return this.sortOrder === 'asc' ? result : -result;
-            });
+          return [...this.products].sort((a, b) => {
+            let result = 0;
+            if (this.sortCriteria === "price" || this.sortCriteria === "availableInventory") {
+              result = a[this.sortCriteria] - b[this.sortCriteria];
+            } else {
+              result = a[this.sortCriteria].localeCompare(b[this.sortCriteria]);
+            }
+            return this.sortOrder === "asc" ? result : -result;
+          });
         },
-
-        // New computed property for counting unique items in the cart
         uniqueCartItemCount() {
-            return this.cart.length;
-        }
-    },
-    methods: {
+          return this.cart.length;
+        },
+      },
+      methods: {
+        async fetchProducts() {
+          try {
+            const response = await fetch("http://localhost:3000/collections/Products");
+            this.products = await response.json();
+          } catch (error) {
+            console.error("Error fetching products:", error);
+          }
+        },
         showPage(page) {
-            this.currentPage = page;
+          this.currentPage = page;
         },
-        
         addToCart(product) {
-            const cartItem = this.cart.find(item => item.id === product.id);
-            if (this.canAddToCart(product)) {
-                if (cartItem) {
-                    cartItem.quantity++;
-                } else {
-                    this.cart.push({ ...product, quantity: 1 });
-                }
+          const cartItem = this.cart.find(item => item.id === product.id);
+          if (this.canAddToCart(product)) {
+            if (cartItem) {
+              cartItem.quantity++;
             } else {
-                alert("Sorry, you've reached the maximum available quantity for this item.");
+              this.cart.push({ ...product, quantity: 1 });
             }
+          } else {
+            alert("Sorry, you've reached the maximum available quantity for this item.");
+          }
         },
-
         canAddToCart(product) {
-            const cartItem = this.cart.find(item => item.id === product.id);
-            const currentCartQuantity = cartItem ? cartItem.quantity : 0;
-            return currentCartQuantity < product.availableInventory;
+          const cartItem = this.cart.find(item => item.id === product.id);
+          const currentCartQuantity = cartItem ? cartItem.quantity : 0;
+          return currentCartQuantity < product.availableInventory;
         },
-
         cartCount(productId) {
-            const cartItem = this.cart.find(item => item.id === productId);
-            return cartItem ? cartItem.quantity : 0;
+          const cartItem = this.cart.find(item => item.id === productId);
+          return cartItem ? cartItem.quantity : 0;
         },
-
         updateQuantity(cartItem, amount) {
-            const product = this.products.find(p => p.id === cartItem.id);
-            if (amount > 0 && this.canAddToCart(product)) {
-                cartItem.quantity++;
-            } else if (amount < 0 && cartItem.quantity > 1) {
-                cartItem.quantity--;
-            } else if (amount < 0 && cartItem.quantity === 1) {
-                this.removeFromCart(cartItem);
-            } else {
-                alert("Sorry, you've reached the maximum available quantity for this item.");
-            }
+          const product = this.products.find(p => p.id === cartItem.id);
+          if (amount > 0 && this.canAddToCart(product)) {
+            cartItem.quantity++;
+          } else if (amount < 0 && cartItem.quantity > 1) {
+            cartItem.quantity--;
+          } else if (amount < 0 && cartItem.quantity === 1) {
+            this.removeFromCart(cartItem);
+          }
         },
-
         removeFromCart(cartItem) {
-            this.cart = this.cart.filter(item => item.id !== cartItem.id);
+          this.cart = this.cart.filter(item => item.id !== cartItem.id);
         },
-
         submitOrder() {
-            alert('Order submitted!');
+          alert("Order submitted!");
         },
-    },
-});
-
-
-
-		</script>
-	</body>
+      },
+      mounted() {
+        this.fetchProducts();
+      },
+    });
+  </script>
+</body>
 </html>
