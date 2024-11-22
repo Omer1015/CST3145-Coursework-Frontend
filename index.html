@@ -193,7 +193,7 @@
               const json = await response.json();
               this.products = json.map(product => ({
                 ...product,
-                image: `${this.backendBaseURL}/public/${product.image}`,
+                image: `${this.backendBaseURL}/Images/${product.image}`,
               }));
             } else {
               console.error('Failed to fetch products:', response.status);
