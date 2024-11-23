@@ -36,6 +36,7 @@
 
     <main v-if="currentPage === 'catalogue'" class="catalog-page">
       <h2>Class Catalogue</h2>
+      
       <div class="sorting-controls">
         <label for="sortCriteria">Sort by:</label>
         <select v-model="sortCriteria" id="sortCriteria">
@@ -50,6 +51,16 @@
           <option value="desc">Descending</option>
         </select>
       </div>
+
+      <div class="search-bar">
+        <input 
+          type="text" 
+          v-model="searchQuery" 
+          placeholder="Search for a class..." 
+          class="search-input" 
+        />
+      </div>
+      
       <div class="catalog-grid">
         <div v-for="product in sortedProducts" :key="product.id" class="product-card">
           <figure>
@@ -102,8 +113,6 @@
                   <input type="text" id="cname" v-model="order.cardName" placeholder="John More Doe">
                   <label for="ccnum">Credit card number</label>
                   <input type="text" id="ccnum" v-model="order.cardNumber" placeholder="1111-2222-3333-4444">
-                  <label for="expmonth">Exp Month</label>
-                  <input type="text" id="expmonth" v-model="order.expMonth" placeholder="September">
                   <label for="expmonth">Exp Month</label>
                   <input type="text" id="expmonth" v-model="order.expMonth" placeholder="September">
                   <div class="row">
@@ -167,7 +176,16 @@
         currentPage: "home",
         cart: [],
         products: [],
-        order: {},
+        order: {
+          firstName: "",
+          PhoneNumber: "",
+          email: "",
+          address: "",
+          city: "",
+          state: "",
+          zip: "",
+          sameAddress: true,
+        },
         sortCriteria: "price",
         sortOrder: "asc",
         backendBaseURL: "https://booksmart-env.eba-8yjv7wms.us-east-1.elasticbeanstalk.com", 
@@ -202,10 +220,10 @@
                 image: `${this.backendBaseURL}/Images/${product.image}`,
               }));
             } else {
-              console.error('Failed to fetch products:', response.status);
+              console.error("Failed to fetch products:", response.status);
             }
           } catch (error) {
-            console.error('Error fetching products:', error);
+            console.error("Error fetching products:", error);
           }
         },
         showPage(page) {
@@ -245,11 +263,56 @@
         removeFromCart(cartItem) {
           this.cart = this.cart.filter(item => item.id !== cartItem.id);
         },
+        async submitOrder() {
+          if (!this.order.firstName || !this.order.email || !this.order.address) {
+            alert("Please complete the required fields.");
+            return;
+          }
+  
+          const orderPayload = {
+            user: {
+              Name: this.order.firstName,
+              "Phone Number": this.order.PhoneNumber,
+              Email: this.order.email,
+              Address: this.order.address,
+              City: this.order.city,
+              State: this.order.state,
+              "Zip Code": this.order.zip,
+              "Shipping Address Same as Billing": this.order.sameAddress ? "Yes" : "No",
+            },
+            "Ordered Items": this.cart.map(item => item.id),
+            "Amount Ordered": this.cart.map(item => item.quantity),
+          };
+  
+          try {
+            const response = await fetch(`${this.backendBaseURL}/collections/Orders`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(orderPayload),
+            });
+  
+            if (response.ok) {
+              alert("Order placed successfully!");
+              this.cart = []; // Clear cart
+              this.order = {}; // Clear order details
+              this.showPage("home"); // Redirect to home
+            } else {
+              const error = await response.json();
+              console.error("Failed to submit order:", error);
+              alert("Failed to submit the order.");
+            }
+          } catch (error) {
+            console.error("Error submitting order:", error);
+            alert("An error occurred while submitting the order.");
+          }
+        },
       },
       mounted() {
         this.fetchProducts();
       },
     });
-  </script>  
+  </script>   
 </body>
 </html>
