@@ -195,7 +195,6 @@ span.price {
 }
 
 .catalog-grid {
-    padding-top: 90px;
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
