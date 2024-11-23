@@ -226,9 +226,11 @@
             console.error("Error fetching products:", error);
           }
         },
+        
         showPage(page) {
           this.currentPage = page;
         },
+        
         addToCart(product) {
           const cartItem = this.cart.find(item => item.id === product.id);
           if (this.canAddToCart(product)) {
@@ -264,50 +266,74 @@
           this.cart = this.cart.filter(item => item.id !== cartItem.id);
         },
         async submitOrder() {
-          if (!this.order.firstName || !this.order.email || !this.order.address) {
-            alert("Please complete the required fields.");
-            return;
-          }
-  
-          const orderPayload = {
-            user: {
-              Name: this.order.firstName,
-              "Phone Number": this.order.PhoneNumber,
-              Email: this.order.email,
-              Address: this.order.address,
-              City: this.order.city,
-              State: this.order.state,
-              "Zip Code": this.order.zip,
-              "Shipping Address Same as Billing": this.order.sameAddress ? "Yes" : "No",
-            },
-            "Ordered Items": this.cart.map(item => item.id),
-            "Amount Ordered": this.cart.map(item => item.quantity),
-          };
-  
-          try {
-            const response = await fetch(`${this.backendBaseURL}/collections/Orders`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(orderPayload),
-            });
-  
-            if (response.ok) {
-              alert("Order placed successfully!");
-              this.cart = []; // Clear cart
-              this.order = {}; // Clear order details
-              this.showPage("home"); // Redirect to home
-            } else {
-              const error = await response.json();
-              console.error("Failed to submit order:", error);
-              alert("Failed to submit the order.");
-            }
-          } catch (error) {
-            console.error("Error submitting order:", error);
-            alert("An error occurred while submitting the order.");
-          }
-        },
+  if (!this.order.firstName || !this.order.email || !this.order.address) {
+    alert("Please complete the required fields.");
+    return;
+  }
+
+  const orderPayload = {
+    user: {
+      Name: this.order.firstName,
+      "Phone Number": this.order.PhoneNumber,
+      Email: this.order.email,
+      Address: this.order.address,
+      City: this.order.city,
+      State: this.order.state,
+      "Zip Code": this.order.zip,
+      "Shipping Address Same as Billing": this.order.sameAddress ? "Yes" : "No",
+    },
+    "Ordered Items": this.cart.map(item => item.id),
+    "Amount Ordered": this.cart.map(item => item.quantity),
+  };
+
+  try {
+    const response = await fetch(`${this.backendBaseURL}/collections/Orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(orderPayload),
+    });
+
+    if (response.ok) {
+      alert("Order placed successfully!");
+
+      for (let i = 0; i < this.cart.length; i++) {
+        const product = this.cart[i];
+        const updatedInventory = product.availableInventory - product.quantity;
+
+        await fetch(`${this.backendBaseURL}/collections/Products/${product.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ availableInventory: updatedInventory }),
+        });
+      }
+
+      this.cart = [];
+      this.order = {
+        firstName: "",
+        PhoneNumber: "",
+        email: "",
+        address: "",
+        city: "",
+        state: "",
+        zip: "",
+        sameAddress: true,
+      };
+      this.fetchProducts(); 
+      this.showPage("home"); 
+    } else {
+      const error = await response.json();
+      console.error("Failed to submit order:", error);
+      alert("Failed to submit the order.");
+    }
+  } catch (error) {
+    console.error("Error submitting order:", error);
+    alert("An error occurred while submitting the order.");
+    }
+  },
       },
       mounted() {
         this.fetchProducts();
