@@ -334,6 +334,11 @@ span.price {
     border-radius: 5px;
   }
   
+  .btn[disabled] {
+    background-color: grey;
+    cursor: not-allowed;
+  }
+  
 
 
 

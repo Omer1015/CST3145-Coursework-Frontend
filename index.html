@@ -142,7 +142,7 @@
               <label>
                 <input type="checkbox" v-model="order.sameAddress"> Shipping address same as billing
               </label>
-              <button type="submit" class="btn">Continue to checkout</button>
+              <button type="submit" class="btn" :disabled="!isFormComplete">Continue to checkout</button>
             </form>
           </div>
           <div class="container cart-items">
@@ -191,6 +191,22 @@
         backendBaseURL: "https://booksmart-env.eba-8yjv7wms.us-east-1.elasticbeanstalk.com", 
       },
       computed: {
+  isFormComplete() {
+    return (
+      this.order.firstName.trim() &&
+      this.order.PhoneNumber.trim() &&
+      this.order.email.trim() &&
+      this.order.address.trim() &&
+      this.order.city.trim() &&
+      this.order.state.trim() &&
+      this.order.zip.trim() &&
+      this.order.cardName.trim() &&
+      this.order.cardNumber.trim() &&
+      this.order.expMonth.trim() &&
+      this.order.expYear.trim() &&
+      this.order.cvv.trim()
+    );
+  },
         cartTotal() {
           return this.cart.reduce((total, item) => total + (item.price * item.quantity), 0);
         },
@@ -265,11 +281,42 @@
         removeFromCart(cartItem) {
           this.cart = this.cart.filter(item => item.id !== cartItem.id);
         },
-        async submitOrder() {
-  if (!this.order.firstName || !this.order.email || !this.order.address) {
-    alert("Please complete the required fields.");
-    return;
-  }
+        validateCheckout() {
+      const nameRegex = /^[a-zA-Z\s]+$/;
+      const phoneRegex = /^\d+$/;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const zipRegex = /^\d+$/;
+
+      if (!this.order.firstName || !nameRegex.test(this.order.firstName)) {
+        alert("Please enter a valid name (letters and spaces only).");
+        return false;
+      }
+      if (!this.order.cardName || !nameRegex.test(this.order.firstName)) {
+        alert("Please enter a valid Card Name (letters and spaces only).");
+        return false;
+      }
+      if (!this.order.PhoneNumber || !phoneRegex.test(this.order.PhoneNumber)) {
+        alert("Please enter a valid phone number (digits only).");
+        return false;
+      }
+      if (!this.order.email || !emailRegex.test(this.order.email)) {
+        alert("Please enter a valid email address.");
+        return false;
+      }
+      if (!this.order.zip || !zipRegex.test(this.order.zip)) {
+        alert("Please enter a valid ZIP code (digits only).");
+        return false;
+      }
+      if (!this.order.state || !nameRegex.test(this.order.state)) {
+        alert("Please enter a valid state name (letters only).");
+        return false;
+      }
+      return true;
+    },
+    async submitOrder() {
+      if (!this.validateCheckout()) {
+        return;
+      }
 
   const orderPayload = {
     user: {
