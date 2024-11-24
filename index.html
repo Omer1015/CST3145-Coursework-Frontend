@@ -58,8 +58,9 @@
           v-model="searchQuery" 
           placeholder="Search for a class..." 
           class="search-input" 
-        />
+          @input="searchProducts">
       </div>
+      
       
       <div class="catalog-grid">
         <div v-for="product in sortedProducts" :key="product.id" class="product-card">
@@ -226,6 +227,30 @@
         },
       },
       methods: {
+  async searchProducts() {
+    if (!this.searchQuery) {
+      // If the search query is empty, fetch all products
+      this.fetchProducts();
+      return;
+    }
+
+    try {
+      const response = await fetch(`${this.backendBaseURL}/collections/Products/search/${encodeURIComponent(this.searchQuery)}`);
+      if (response.ok) {
+        const json = await response.json();
+        this.products = json.map(product => ({
+          ...product,
+          image: `${this.backendBaseURL}/Images/${product.image}`,
+        }));
+      } else {
+        console.error("Failed to fetch search results:", response.status);
+        this.products = []; // Clear products if search fails
+      }
+    } catch (error) {
+      console.error("Error fetching search results:", error);
+      this.products = []; // Clear products if search fails
+    }
+  },
         async fetchProducts() {
           try {
             const response = await fetch(`${this.backendBaseURL}/collections/Products`);
