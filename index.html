@@ -307,15 +307,15 @@
         alert("Please enter a valid name (letters and spaces only).");
         return false;
       }
-      if (!this.order.cardName || !nameRegex.test(this.order.firstName)) {
+      /* if (!this.order.cardName || !nameRegex.test(this.order.firstName)) {
         alert("Please enter a valid Card Name (letters and spaces only).");
         return false;
-      }
+      } */
       if (!this.order.PhoneNumber || !phoneRegex.test(this.order.PhoneNumber)) {
         alert("Please enter a valid phone number (digits only).");
         return false;
       }
-      if (!this.order.email || !emailRegex.test(this.order.email)) {
+      /* if (!this.order.email || !emailRegex.test(this.order.email)) {
         alert("Please enter a valid email address.");
         return false;
       }
@@ -326,7 +326,7 @@
       if (!this.order.state || !nameRegex.test(this.order.state)) {
         alert("Please enter a valid state name (letters only).");
         return false;
-      }
+      } */
       return true;
     },
     async submitOrder() {
