@@ -194,18 +194,9 @@
       computed: {
   isFormComplete() {
     return (
+      this.cart.length > 0 && 
       this.order.firstName.trim() &&
-      this.order.PhoneNumber.trim() &&
-      this.order.email.trim() &&
-      this.order.address.trim() &&
-      this.order.city.trim() &&
-      this.order.state.trim() &&
-      this.order.zip.trim() &&
-      this.order.cardName.trim() &&
-      this.order.cardNumber.trim() &&
-      this.order.expMonth.trim() &&
-      this.order.expYear.trim() &&
-      this.order.cvv.trim()
+      this.order.PhoneNumber.trim()
     );
   },
         cartTotal() {
