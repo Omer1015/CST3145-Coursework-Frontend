@@ -10,16 +10,19 @@
 </head>
 <body>
   <div id="app">
+    <!-- Navigation bar -->
     <nav>
       <div class="logo">
+        <!-- Logo -->
         <img src="img/BOOKSMART.png" style="height: 100px;">
       </div>
       <ul>
-        <li><a href="#" v-on:click.prevent="showPage('home')">Home</a></li>
-        <li><a href="#" v-on:click.prevent="showPage('catalogue')">Catalogue</a></li>
-        <li>
-          <a href="#" v-on:click.prevent="showPage('cart')"> Cart
+        <!-- Links to switch between pages -->
+          <li><a href="#" v-on:click.prevent="showPage('home')">Home</a></li>
+          <li><a href="#" v-on:click.prevent="showPage('catalogue')">Catalogue</a></li>
+          <li><a href="#" v-on:click.prevent="showPage('cart')"> Cart
             <span class="material-symbols-outlined"> shopping_cart</span>
+            <!-- Display the number of unique items in the cart -->
             <span v-if="uniqueCartItemCount > 0" class="cart-count">({{ uniqueCartItemCount }})</span>
           </a>
         </li>
@@ -34,11 +37,16 @@
       </div>
     </header>
 
+    <!-- Catalogue Page Start-->
+
     <main v-if="currentPage === 'catalogue'" class="catalog-page">
       <h2>Class Catalogue</h2>
       
+      <!-- Sorting Buttons -->
+
       <div class="sorting-controls">
         <label for="sortCriteria">Sort by:</label>
+        <!-- Dropdown to select sorting criteria -->
         <select v-model="sortCriteria" id="sortCriteria">
           <option value="price">Price</option>
           <option value="Subject">Subject</option>
@@ -52,6 +60,8 @@
         </select>
       </div>
 
+      <!-- Search Bar for catalogue -->
+
       <div class="search-bar">
         <input 
           type="text" 
@@ -61,24 +71,34 @@
           @input="searchProducts">
       </div>
       
+      <!-- Product List -->
       
       <div class="catalog-grid">
+        <!-- renders multiples elements based on the feteched information -->
         <div v-for="product in sortedProducts" :key="product.id" class="product-card">
           <figure>
+          <!-- Display Product Image -->
             <img :src="product.image" :alt="product.title" />
           </figure>
+          <!-- Display Product details -->
           <h3>{{ product.title }}</h3>
           <p>{{ product.description }}</p>
           <p><strong>Subject:</strong> {{ product.Subject }}</p>
           <p><strong>Location:</strong> {{ product.Location }}</p>
           <p><strong>Price:</strong> ${{ product.price }}</p>
           <p><strong>Available:</strong> {{ product.availableInventory - cartCount(product.id) }} in stock</p>
+          <!-- Add to cart Button -->
           <button v-if="canAddToCart(product)" @click="addToCart(product)">Add to Cart</button>
+          <!-- Out of Stock indicator -->
           <button v-else disabled="disabled">Out of Stock</button>
         </div>
       </div>
     </main>
+
+    <!-- Catalogue Page End-->
     
+    <!-- Checkout page Start -->
+
     <main v-if="currentPage === 'cart'" class="checkout-page">
       <div class="row">
         <div class="col-75">
@@ -86,6 +106,7 @@
             <form @submit.prevent="submitOrder">
               <div class="row">
                 <div class="col-50">
+                  <!-- Billing Address Section -->
                   <h3>Billing Address</h3>
                   <label for="fname"><i class="fa fa-user"></i> Full Name</label>
                   <input type="text" id="fname" v-model="order.firstName" placeholder="John M. Doe">
@@ -108,6 +129,7 @@
                     </div>
                   </div>
                 </div>
+                <!-- Payment Section -->
                 <div class="col-50">
                   <h3>Payment</h3>
                   <label for="cname">Name on Card</label>
@@ -128,6 +150,11 @@
                   </div>
                 </div>
               </div>
+              
+              <!-- Checkout page End -->
+
+              <!--Order Summary Start-->
+
               <div class="order-summary">
                 <h4>Order Summary</h4>
                 <p><strong>Full Name:</strong> {{ order.firstName }}</p>
@@ -138,11 +165,14 @@
                 <p><strong>State:</strong> {{ order.state }}</p>
                 <p><strong>Zip Code:</strong> {{ order.zip }}</p>
                 <p><strong>Shipping Address Same as Billing:</strong> {{ order.sameAddress ? 'Yes' : 'No' }}</p>
+              
+              <!--Order Summary End-->
 
               </div>
               <label>
                 <input type="checkbox" v-model="order.sameAddress"> Shipping address same as billing
               </label>
+              <!-- Checkout Button disabled until all information is correct (Validation)-->
               <button type="submit" class="btn" :disabled="!isFormComplete">Continue to checkout</button>
             </form>
           </div>
@@ -170,14 +200,16 @@
     </main>
   </div>
 
+  <!-- Script Section Start -->
+
   <script>
     new Vue({
       el: "#app",
       data: {
-        currentPage: "home",
-        cart: [],
-        products: [],
-        order: {
+        currentPage: "home", //Tracks the current page
+        cart: [], //Stores items in the shopping cart
+        products: [], //Stores all available products
+        order: { //Stores user information for the order
           firstName: "",
           PhoneNumber: "",
           email: "",
@@ -185,27 +217,31 @@
           city: "",
           state: "",
           zip: "",
-          sameAddress: true,
+          sameAddress: true, //checkbox is already checked
         },
-        sortCriteria: "price",
-        sortOrder: "asc",
+        sortCriteria: "price", //Default Sorting Criteria
+        sortOrder: "asc", // Default Sorting Order
         backendBaseURL: "https://booksmart-env.eba-8yjv7wms.us-east-1.elasticbeanstalk.com", 
       },
       computed: {
   isFormComplete() {
-    return (
+    // Ensures the checkout button is enabled only if the cart has items and the name and phone fields are filled
+     return (
       this.cart.length > 0 && 
       this.order.firstName.trim() &&
       this.order.PhoneNumber.trim()
     );
   },
         cartTotal() {
+          //Calculates Total cost of items in the cart
           return this.cart.reduce((total, item) => total + (item.price * item.quantity), 0);
         },
         sortedProducts() {
+          //Sorts product based on their price, 
           return [...this.products].sort((a, b) => {
             let result = 0;
             if (this.sortCriteria === "price" || this.sortCriteria === "availableInventory") {
+              // Numerical comparison for price and available inventory
               result = a[this.sortCriteria] - b[this.sortCriteria];
             } else {
               result = a[this.sortCriteria].localeCompare(b[this.sortCriteria]);
@@ -214,11 +250,13 @@
           });
         },
         uniqueCartItemCount() {
+          //Counts unique Items in the cart
           return this.cart.length;
         },
       },
       methods: {
   async searchProducts() {
+    // Fetches Products based on what is typed into the Search Bar
     if (!this.searchQuery) {
       // If the search query is empty, fetch all products
       this.fetchProducts();
@@ -229,6 +267,7 @@
       const response = await fetch(`${this.backendBaseURL}/collections/Products/search/${encodeURIComponent(this.searchQuery)}`);
       if (response.ok) {
         const json = await response.json();
+        // Map the response data to the product list
         this.products = json.map(product => ({
           ...product,
           image: `${this.backendBaseURL}/Images/${product.image}`,
@@ -243,6 +282,7 @@
     }
   },
         async fetchProducts() {
+          //Fetches all Products from MongoDB(Backend)
           try {
             const response = await fetch(`${this.backendBaseURL}/collections/Products`);
             if (response.ok) {
@@ -260,10 +300,12 @@
         },
         
         showPage(page) {
+          //changes the pages
           this.currentPage = page;
         },
         
         addToCart(product) {
+          //adds a product to the cart
           const cartItem = this.cart.find(item => item.id === product.id);
           if (this.canAddToCart(product)) {
             if (cartItem) {
@@ -276,28 +318,33 @@
           }
         },
         canAddToCart(product) {
+          //Checks if a product is able to be added to the cart by its avilable inventory
           const cartItem = this.cart.find(item => item.id === product.id);
           const currentCartQuantity = cartItem ? cartItem.quantity : 0;
           return currentCartQuantity < product.availableInventory;
         },
         cartCount(productId) {
+          //Returns the Quantity of a Product that is in the cart
           const cartItem = this.cart.find(item => item.id === productId);
-          return cartItem ? cartItem.quantity : 0;
+          return cartItem ? cartItem.quantity : 0; // 0 is returned when the product is not in the cart
         },
         updateQuantity(cartItem, amount) {
+          //Updates the Quantity of a product that is in the cart
           const product = this.products.find(p => p.id === cartItem.id);
           if (amount > 0 && this.canAddToCart(product)) {
-            cartItem.quantity++;
+            cartItem.quantity++; // Increase quantity
           } else if (amount < 0 && cartItem.quantity > 1) {
-            cartItem.quantity--;
+            cartItem.quantity--; // Decrease quantity if greater than 1
           } else if (amount < 0 && cartItem.quantity === 1) {
-            this.removeFromCart(cartItem);
+            this.removeFromCart(cartItem); // Remove the item if quantity becomes 0
           }
         },
         removeFromCart(cartItem) {
+          //Remove Items from the cart
           this.cart = this.cart.filter(item => item.id !== cartItem.id);
         },
         validateCheckout() {
+        // Performs Validation for the checkout form
       const nameRegex = /^[a-zA-Z\s]+$/;
       const phoneRegex = /^\d+$/;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -327,14 +374,16 @@
         alert("Please enter a valid state name (letters only).");
         return false;
       } */
-      return true;
+      return true; // Return True if all validations pass.
     },
     async submitOrder() {
+      // Submits the order to the backend
       if (!this.validateCheckout()) {
-        return;
+        return; // Exit if Validation Fails
       }
 
   const orderPayload = {
+    //Sends Information to MongoDB
     user: {
       Name: this.order.firstName,
       "Phone Number": this.order.PhoneNumber,
@@ -345,8 +394,8 @@
       "Zip Code": this.order.zip,
       "Shipping Address Same as Billing": this.order.sameAddress ? "Yes" : "No",
     },
-    "Ordered Items": this.cart.map(item => item.id),
-    "Amount Ordered": this.cart.map(item => item.quantity),
+    "Ordered Items": this.cart.map(item => item.id), // List of Product IDs in the order
+    "Amount Ordered": this.cart.map(item => item.quantity), //Quantities of Each Product
   };
 
   try {
@@ -360,10 +409,9 @@
 
     if (response.ok) {
       alert("Order placed successfully!");
-
-      for (let i = 0; i < this.cart.length; i++) {
-        const product = this.cart[i];
-        const updatedInventory = product.availableInventory - product.quantity;
+      for (let i = 0; i < this.cart.length; i++) { // Clear the cart
+        const product = this.cart[i]; // Refresh Product Inventory
+        const updatedInventory = product.availableInventory - product.quantity; // Redirect user to the home page
 
         await fetch(`${this.backendBaseURL}/collections/Products/${product.id}`, {
           method: "PUT",
@@ -399,9 +447,13 @@
   },
       },
       mounted() {
+        //Fetch Products when Website Starts
         this.fetchProducts();
       },
     });
   </script>   
+
+  <!-- Script Section End -->
+
 </body>
 </html>
